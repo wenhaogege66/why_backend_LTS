@@ -13,6 +13,7 @@ from .serializers import (
     PasswordUpdateSerializer
 )
 from django.contrib.auth import get_user_model
+from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
 
 User = get_user_model()
 
@@ -121,3 +122,36 @@ class UserDeleteView(APIView):
                 'code': 40002,
                 'message': '注销请求处理失败，请稍后再试'
             }, status=status.HTTP_400_BAD_REQUEST)
+
+class UserQuitView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            # 从 header 中获取 token
+            auth_header = request.headers.get('Authorization', '')
+            if not auth_header.startswith('Bearer '):
+                return Response({
+                    'code': 40301,
+                    'message': '请登录后操作'
+                }, status=status.HTTP_403_FORBIDDEN)
+            
+            # 获取 token 字符串
+            token = auth_header.split(' ')[1]
+            
+            # 将 token 加入黑名单
+            try:
+                token_obj = OutstandingToken.objects.get(token=token)
+                BlacklistedToken.objects.get_or_create(token=token_obj)
+            except OutstandingToken.DoesNotExist:
+                pass
+            
+            return Response({
+                'code': 0,
+                'message': '退出成功'
+            })
+        except Exception as e:
+            return Response({
+                'code': 40301,
+                'message': '请登录后操作'
+            }, status=status.HTTP_403_FORBIDDEN)
