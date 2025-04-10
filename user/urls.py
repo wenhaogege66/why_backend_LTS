@@ -15,4 +15,4 @@ urlpatterns = [
     path('update/', UserUpdateView.as_view(), name='user-update'),
     path('update/password/', PasswordUpdateView.as_view(), name='user-update-password'),
     path('delete/', UserDeleteView.as_view(), name='user-delete'),
-] 
+]  
