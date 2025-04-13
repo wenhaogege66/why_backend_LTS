@@ -9,7 +9,7 @@ class User(AbstractUser):
     created_at = models.DateTimeField(default=timezone.now)
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['nickname', 'username']
+    REQUIRED_FIELDS = ['nickname']
 
     class Meta:
         db_table = 'user'

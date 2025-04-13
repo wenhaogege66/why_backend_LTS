@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import authenticate
+from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import (
     UserRegisterSerializer,
     UserLoginSerializer,
@@ -29,9 +30,13 @@ class UserRegisterView(APIView):
             except Exception as e:
                 return Response({
                     'code': 40003,
-                    'message': '注册请求处理失败，请稍后再试'
+                    'message': f'注册请求处理失败: {str(e)}'
                 }, status=status.HTTP_400_BAD_REQUEST)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({
+            'code': 40004,
+            'message': '数据验证失败',
+            'errors': serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
 
 class UserLoginView(APIView):
     def post(self, request):

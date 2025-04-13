@@ -12,12 +12,15 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         fields = ('nickname', 'email', 'password')
 
     def validate(self, attrs):
+        if User.objects.filter(email=attrs['email']).exists():
+            raise serializers.ValidationError({'email': '该邮箱已被注册'})
         return attrs
 
     def create(self, validated_data):
         user = User.objects.create(
             email=validated_data['email'],
             nickname=validated_data['nickname'],
+            username=validated_data['email']  # 使用email作为username
         )
         user.set_password(validated_data['password'])
         user.save()
