@@ -18,3 +18,17 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.nickname
+    @classmethod
+    def create_superuser(cls, email, password, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('username', email)  # 使用email作为username
+        extra_fields.setdefault('nickname', 'admin')  # 设置默认昵称
+
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('Superuser must have is_staff=True.')
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('Superuser must have is_superuser=True.')
+
+        return cls._create_user(email, password, **extra_fields)
+
