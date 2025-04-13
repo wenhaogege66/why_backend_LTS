@@ -40,3 +40,11 @@ python manage.py migrate
 ```bash
 python manage.py runserver
 ```
+
+7.管理员
+email='admin@example.com',
+password='admin123456',
+nickname='admin'
+
+8.音乐相关
+先艺术家，再专辑，最后歌曲；专辑字段是可选的，如果只想创建歌曲而不关联专辑，可以省略 album 字段

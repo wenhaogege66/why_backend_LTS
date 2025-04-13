@@ -3,10 +3,10 @@ from rest_framework import viewsets, status, filters
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from django.db.models import Q, Count, Avg
+from django.db.models import Q, Count, Avg, Max
 from django.utils import timezone
 
-from .models import Artist, Album, Song, Tag, Playlist, Favorite, Comment, Rating, PlayHistory
+from .models import Artist, Album, Song, Tag, Playlist, Favorite, Comment, Rating, PlayHistory, PlaylistSong
 from .serializers import (
     ArtistSerializer, AlbumSerializer, SongSerializer, SongDetailSerializer,
     TagSerializer, PlaylistSerializer, PlaylistDetailSerializer,
@@ -242,7 +242,7 @@ class PlaylistViewSet(viewsets.ModelViewSet):
             return Response({'error': '歌曲不存在'}, status=status.HTTP_404_NOT_FOUND)
         
         # 获取最大顺序值
-        max_order = playlist.playlist_songs.aggregate(max_order=models.Max('order'))['max_order'] or 0
+        max_order = playlist.playlist_songs.aggregate(max_order=Max('order'))['max_order'] or 0
         
         # 添加歌曲到播放列表
         playlist_song, created = PlaylistSong.objects.get_or_create(
