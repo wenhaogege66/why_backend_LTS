@@ -49,7 +49,7 @@ class UserLoginView(APIView):
             if user:
                 refresh = RefreshToken.for_user(user)
                 return Response({
-                    'code': 0,
+                    'code': 200,
                     'message': '登录成功',
                     'data': {
                         'token': str(refresh.access_token)
@@ -67,7 +67,7 @@ class UserProfileView(APIView):
     def get(self, request):
         serializer = UserProfileSerializer(request.user)
         return Response({
-            'code': 0,
+            'code': 200,
             'message': '获取成功',
             'data': serializer.data
         })
@@ -80,7 +80,7 @@ class UserUpdateView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response({
-                'code': 0,
+                'code': 200,
                 'message': '更新成功'
             })
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -106,7 +106,7 @@ class PasswordUpdateView(APIView):
             request.user.set_password(serializer.validated_data['new_password'])
             request.user.save()
             return Response({
-                'code': 0,
+                'code': 200,
                 'message': '密码修改成功'
             })
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -118,7 +118,7 @@ class UserDeleteView(APIView):
         try:
             request.user.delete()
             return Response({
-                'code': 0,
+                'code': 200,
                 'message': '注销成功'
             })
         except Exception as e:
