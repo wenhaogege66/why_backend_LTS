@@ -24,7 +24,7 @@ class UserRegisterView(APIView):
             try:
                 user = serializer.save()
                 return Response({
-                    'code': 0,
+                    'code': 200,
                     'message': '注册成功'
                 }, status=status.HTTP_200_OK)
             except Exception as e:
