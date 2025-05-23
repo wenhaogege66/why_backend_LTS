@@ -8,14 +8,7 @@ from django.contrib.auth import get_user_model
 class BaseSearchView(APIView):
 	def get_search_params(self, request):
 		keyword = request.GET.get('keyword', '')
-		page = request.GET.get('page_wanted', 1)
-		page_size = request.GET.get('page_size', 20)
-		return keyword, int(page), int(page_size)
-
-	def paginate_results(self, results, page, page_size):
-		start = (page - 1) * page_size
-		end = start + page_size
-		return results[start:end]
+		return keyword
 
 	def keyword_api(self, params):
 		api_url = 'https://apis.netstart.cn/music/cloudsearch'
@@ -35,8 +28,7 @@ class BaseSearchView(APIView):
 
 class SearchByTitleView(BaseSearchView):
 	def get(self, request):
-		keyword, page, page_size = self.get_search_params(request)
-		
+		keyword = self.get_search_params(request)
 		if not keyword:
 			return Response({'code': 403, 'message': '请输入搜索关键词'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -71,25 +63,11 @@ class SearchByTitleView(BaseSearchView):
 						},
 						'publishTime': song.get('publishTime', 0)
 					})
-
-				# 使用API返回的songCount计算总页数
-				total_count = result.get('songCount', 0)
-				total_pages = (total_count + page_size - 1) // page_size
-
-				# 获取请求的页面数据
-				paginated_results = self.paginate_results(formatted_results, page, page_size)
-
 				return Response({
 					'code': 200,
 					'message': 'success',
-					'data': paginated_results,
-					'metadata': {
-						'current_page': page,
-						'page_size': page_size,
-						'total_pages': total_pages
-					}
+					'data': formatted_results
 				})
-
 			return Response({'code': 403, 'message': 'failed'}, status=status.HTTP_400_BAD_REQUEST)
 
 		except Exception as e:
@@ -97,8 +75,7 @@ class SearchByTitleView(BaseSearchView):
 
 class SearchByArtistView(BaseSearchView):
 	def get(self, request):
-		keyword, page, page_size = self.get_search_params(request)
-		
+		keyword = self.get_search_params(request)
 		if not keyword:
 			return Response({'code': 403, 'message': '请输入搜索关键词'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -113,8 +90,6 @@ class SearchByArtistView(BaseSearchView):
 			if data.get('code') == 200:
 				result = data.get('result', {})
 				all_artists = result.get('artists', [])
-				
-				# 格式化所有结果
 				formatted_results = []
 				for artist in all_artists:
 					formatted_results.append({
@@ -125,34 +100,18 @@ class SearchByArtistView(BaseSearchView):
 						'albumSize': artist.get('albumSize', 0),
 						'mvSize': artist.get('mvSize', 0)
 					})
-
-				# 使用API返回的artistCount计算总页数
-				total_count = result.get('artistCount', 0)
-				total_pages = (total_count + page_size - 1) // page_size
-
-				# 获取请求的页面数据
-				paginated_results = self.paginate_results(formatted_results, page, page_size)
-
 				return Response({
 					'code': 200,
 					'message': 'success',
-					'data': paginated_results,
-					'metadata': {
-						'current_page': page,
-						'page_size': page_size,
-						'total_pages': total_pages
-					}
+					'data': formatted_results
 				})
-
 			return Response({'code': 403, 'message': 'failed'}, status=status.HTTP_400_BAD_REQUEST)
-
 		except Exception as e:
 			return Response({'code': 500, 'message': f'搜索出错: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class SearchByAlbumView(BaseSearchView):
 	def get(self, request):
-		keyword, page, page_size = self.get_search_params(request)
-		
+		keyword = self.get_search_params(request)
 		if not keyword:
 			return Response({'code': 403, 'message': '请输入搜索关键词'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -167,8 +126,6 @@ class SearchByAlbumView(BaseSearchView):
 			if data.get('code') == 200:
 				result = data.get('result', {})
 				all_albums = result.get('albums', [])
-				
-				# 格式化所有结果
 				formatted_results = []
 				for album in all_albums:
 					formatted_results.append({
@@ -186,40 +143,19 @@ class SearchByAlbumView(BaseSearchView):
 						} for ar in album.get('artists', [])]
 					})
 
-				# 使用API返回的albumCount计算总页数
-				total_count = result.get('albumCount', 0)
-				total_pages = (total_count + page_size - 1) // page_size
-
-				# 获取请求的页面数据
-				paginated_results = self.paginate_results(formatted_results, page, page_size)
-
 				return Response({
 					'code': 200,
 					'message': 'success',
-					'data': paginated_results,
-					'metadata': {
-						'current_page': page,
-						'page_size': page_size,
-						'total_pages': total_pages
-					}
+					'data': formatted_results
 				})
-
 			return Response({'code': 403, 'message': 'failed'}, status=status.HTTP_400_BAD_REQUEST)
-
 		except Exception as e:
 			return Response({'code': 500, 'message': f'搜索出错: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class AdvancedSearchView(APIView):
 	def get_search_params(self, request):
 		id = request.GET.get('id', '')
-		page = request.GET.get('page_wanted', 1)
-		page_size = request.GET.get('page_size', 20)
-		return id, int(page), int(page_size)
-
-	def paginate_results(self, results, page, page_size):
-		start = (page - 1) * page_size
-		end = start + page_size
-		return results[start:end]
+		return id
 
 	def artist_api(self, params):
 		api_url = 'https://apis.netstart.cn/music/artists'
@@ -255,15 +191,12 @@ class AdvancedSearchView(APIView):
 
 class SearchByArtistSongView(AdvancedSearchView):
 	def get(self, request):
-		id, page, page_size = self.get_search_params(request)
-		
+		id = self.get_search_params(request)
 		if not id:
 			return Response({'code': 403, 'message': '请输入歌手id'}, status=status.HTTP_400_BAD_REQUEST)
-
 		params = {
 			'id': id
 		}
-
 		try:
 			data = self.artist_api(params)
 			if data.get('code') == 200:
@@ -302,43 +235,23 @@ class SearchByArtistSongView(AdvancedSearchView):
 						'id': song.get('id', 0)
 					}
 					formatted_artist['songs'].append(formatted_song)
-
-				# 计算分页信息
-				total_count = len(songs)
-				total_pages = (total_count + page_size - 1) // page_size
-
-				# 对歌曲列表进行分页
-				start = (page - 1) * page_size
-				end = start + page_size
-				formatted_artist['songs'] = formatted_artist['songs'][start:end]
-
 				return Response({
 					'code': 200,
 					'message': 'success',
-					'data': [formatted_artist],
-					'metadata': {
-						'current_page': page,
-						'page_size': page_size,
-						'total_pages': total_pages
-					}
+					'data': [formatted_artist]
 				})
-
 			return Response({'code': 403, 'message': 'failed'}, status=status.HTTP_400_BAD_REQUEST)
-
 		except Exception as e:
 			return Response({'code': 500, 'message': f'搜索出错: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class SearchByAlbumSongView(AdvancedSearchView):
 	def get(self, request):
-		id, page, page_size = self.get_search_params(request)
-		
+		id = self.get_search_params(request)
 		if not id:
 			return Response({'code': 403, 'message': '请输入专辑id'}, status=status.HTTP_400_BAD_REQUEST)
-
 		params = {
 			'id': id
 		}
-
 		try:
 			data = self.album_api(params)
 			if data.get('code') == 200:
@@ -382,28 +295,11 @@ class SearchByAlbumSongView(AdvancedSearchView):
 						'id': song.get('id', 0)
 					}
 					formatted_album['songs'].append(formatted_song)
-
-				# 计算分页信息
-				total_count = len(songs)
-				total_pages = (total_count + page_size - 1) // page_size
-
-				# 对歌曲列表进行分页
-				start = (page - 1) * page_size
-				end = start + page_size
-				formatted_album['songs'] = formatted_album['songs'][start:end]
-
 				return Response({
 					'code': 200,
 					'message': 'success',
-					'data': [formatted_album],
-					'metadata': {
-						'current_page': page,
-						'page_size': page_size,
-						'total_pages': total_pages
-					}
+					'data': [formatted_album]
 				})
-
 			return Response({'code': 403, 'message': 'failed'}, status=status.HTTP_400_BAD_REQUEST)
-
 		except Exception as e:
 			return Response({'code': 500, 'message': f'搜索出错: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
