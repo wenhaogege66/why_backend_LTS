@@ -188,6 +188,38 @@ class AdvancedSearchView(APIView):
 			return response.json()
 		except Exception as e:
 			raise Exception(f'API调用失败: {str(e)}')
+		
+	def song_api(self, params):
+		api_url = 'http://music.alger.fun/music_proxy/music'
+		headers = {
+			'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+			'Accept': 'application/json, text/plain, */*',
+			'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+			'Origin': 'http://music.alger.fun/',
+			'Referer': 'http://music.alger.fun/',
+		}
+		try:
+			response = requests.get(api_url, params=params, headers=headers)
+			# print(response.text)
+			return response.json()
+		except Exception as e:
+			raise Exception(f'API调用失败: {str(e)}')
+		
+	def lyric_api(self, params):
+		api_url = 'https://apis.netstart.cn/music/lyric'
+		headers = {
+			'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+			'Accept': 'application/json, text/plain, */*',
+			'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+			'Origin': 'https://music.163.com',
+			'Referer': 'https://music.163.com/',
+		}
+		try:
+			response = requests.get(api_url, params=params, headers=headers)
+			# print(response.text)
+			return response.json()
+		except Exception as e:
+			raise Exception(f'API调用失败: {str(e)}')
 
 class SearchByArtistSongView(AdvancedSearchView):
 	def get(self, request):
@@ -299,6 +331,32 @@ class SearchByAlbumSongView(AdvancedSearchView):
 					'code': 200,
 					'message': 'success',
 					'data': [formatted_album]
+				})
+			return Response({'code': 403, 'message': 'failed'}, status=status.HTTP_400_BAD_REQUEST)
+		except Exception as e:
+			return Response({'code': 500, 'message': f'搜索出错: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+		
+class SearchBySongView(AdvancedSearchView):
+	def get(self, request):
+		id = self.get_search_params(request)
+		if not id:
+			return Response({'code': 403, 'message': '请输入歌曲id'}, status=status.HTTP_400_BAD_REQUEST)
+		params = {
+			'id': id
+		}
+		try:
+			data = self.song_api(params)
+			url = data.get('data', {}).get('url', '')
+			data = self.lyric_api(params)
+			lyric = data.get('lrc', {}).get('lyric', '')
+			if url and lyric:
+				return Response({
+					'code': 200,
+					'message': 'success',
+					'data': {
+						'url': url,
+						'lyric': lyric
+					}
 				})
 			return Response({'code': 403, 'message': 'failed'}, status=status.HTTP_400_BAD_REQUEST)
 		except Exception as e:
