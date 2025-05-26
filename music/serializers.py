@@ -119,13 +119,13 @@ class RatingSerializer(serializers.ModelSerializer):
 class FavoriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Favorite
-        fields = ['id', 'song_id', 'song_name', 'artist_name', 'album_name', 'pic_url', 'created_at']
+        fields = ['id', 'song_id', 'song_name', 'artist_name', 'album_name', 'pic_url', 'artist_id', 'album_id', 'created_at']
         read_only_fields = ['id', 'created_at']
 
 class FavoriteCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Favorite
-        fields = ['song_id', 'song_name', 'artist_name', 'album_name', 'pic_url']
+        fields = ['song_id', 'song_name', 'artist_name', 'album_name', 'pic_url', 'artist_id', 'album_id']
 
 class PlayHistorySerializer(serializers.ModelSerializer):
     song_detail = SongSerializer(source='song', read_only=True)
