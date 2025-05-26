@@ -117,16 +117,15 @@ class RatingSerializer(serializers.ModelSerializer):
         return rating
 
 class FavoriteSerializer(serializers.ModelSerializer):
-    song_detail = SongSerializer(source='song', read_only=True)
-    
     class Meta:
         model = Favorite
-        fields = ['id', 'user', 'song', 'song_detail', 'created_at']
-        read_only_fields = ['user', 'created_at']
-    
-    def create(self, validated_data):
-        validated_data['user'] = self.context['request'].user
-        return super().create(validated_data)
+        fields = ['id', 'song_id', 'song_name', 'artist_name', 'album_name', 'pic_url', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
+class FavoriteCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Favorite
+        fields = ['song_id', 'song_name', 'artist_name', 'album_name', 'pic_url']
 
 class PlayHistorySerializer(serializers.ModelSerializer):
     song_detail = SongSerializer(source='song', read_only=True)

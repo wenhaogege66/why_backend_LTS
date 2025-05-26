@@ -101,15 +101,21 @@ class PlaylistSong(models.Model):
         verbose_name_plural = '播放列表歌曲'
 
 class Favorite(models.Model):
+    """用户收藏模型"""
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorites')
-    song = models.ForeignKey(Song, on_delete=models.CASCADE, related_name='favorites')
-    created_at = models.DateTimeField(default=timezone.now)
+    song_id = models.IntegerField(default=0)  # 歌曲ID（来自第三方API）
+    song_name = models.CharField(max_length=200, default='Unknown Song')  # 歌曲名称
+    artist_name = models.CharField(max_length=200, default='Unknown Artist')  # 歌手名称
+    album_name = models.CharField(max_length=200, blank=True, default='')  # 专辑名称
+    pic_url = models.URLField(blank=True, default='')  # 封面图片URL
+    created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
-        db_table = 'favorite'
-        unique_together = ('user', 'song')
-        verbose_name = '收藏'
-        verbose_name_plural = '收藏'
+        unique_together = ('user', 'song_id')  # 确保用户不能重复收藏同一首歌
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.user.email} - {self.song_name}"
 
 class Comment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')

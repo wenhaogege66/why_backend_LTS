@@ -10,7 +10,8 @@ from .models import Artist, Album, Song, Tag, Playlist, Favorite, Comment, Ratin
 from .serializers import (
     ArtistSerializer, AlbumSerializer, SongSerializer, SongDetailSerializer,
     TagSerializer, PlaylistSerializer, PlaylistDetailSerializer,
-    CommentSerializer, RatingSerializer, FavoriteSerializer, PlayHistorySerializer
+    CommentSerializer, RatingSerializer, FavoriteSerializer, PlayHistorySerializer,
+    FavoriteCreateSerializer
 )
 
 class ArtistViewSet(viewsets.ModelViewSet):
@@ -284,8 +285,42 @@ class FavoriteViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return Favorite.objects.filter(user=self.request.user)
     
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return FavoriteCreateSerializer
+        return FavoriteSerializer
+    
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+    
+    @action(detail=False, methods=['post'])
+    def toggle(self, request):
+        """切换收藏状态"""
+        song_id = request.data.get('song_id')
+        if not song_id:
+            return Response({'error': '缺少song_id参数'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            favorite = Favorite.objects.get(user=request.user, song_id=song_id)
+            favorite.delete()
+            return Response({'message': '取消收藏成功', 'is_favorite': False})
+        except Favorite.DoesNotExist:
+            # 创建收藏
+            serializer = FavoriteCreateSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save(user=request.user)
+                return Response({'message': '收藏成功', 'is_favorite': True})
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    @action(detail=False, methods=['get'])
+    def check(self, request):
+        """检查歌曲是否已收藏"""
+        song_id = request.query_params.get('song_id')
+        if not song_id:
+            return Response({'error': '缺少song_id参数'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        is_favorite = Favorite.objects.filter(user=request.user, song_id=song_id).exists()
+        return Response({'is_favorite': is_favorite})
 
 class PlayHistoryViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = PlayHistorySerializer
