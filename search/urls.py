@@ -18,4 +18,6 @@ urlpatterns = [
     path("bysong/", views.SearchBySongView.as_view(), name="search_by_song"),
     path("bydesc/", views.SearchByDescView.as_view(), name="search_by_desc"),
     path("byspirit/", views.SearchBySpiritView.as_view(), name="search_by_spirit"),
+    path("guess/", views.SearchGuess.as_view(), name="search_guess"),
+    path("related/", views.SearchRelated.as_view(), name="search_related"),
 ]
