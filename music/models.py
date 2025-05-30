@@ -103,13 +103,13 @@ class PlaylistSong(models.Model):
 class Favorite(models.Model):
     """用户收藏模型"""
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorites')
-    song_id = models.IntegerField(default=0)  # 歌曲ID（来自第三方API）
+    song_id = models.BigIntegerField(default=0)  # 歌曲ID（来自第三方API）
     song_name = models.CharField(max_length=200, default='Unknown Song')  # 歌曲名称
     artist_name = models.CharField(max_length=200, default='Unknown Artist')  # 歌手名称
     album_name = models.CharField(max_length=200, blank=True, default='')  # 专辑名称
     pic_url = models.URLField(blank=True, default='')  # 封面图片URL
-    artist_id = models.IntegerField(blank=True, null=True, help_text='歌手ID（来自第三方API）')  # 歌手ID
-    album_id = models.IntegerField(blank=True, null=True, help_text='专辑ID（来自第三方API）')  # 专辑ID
+    artist_id = models.BigIntegerField(blank=True, null=True, help_text='歌手ID（来自第三方API）')  # 歌手ID
+    album_id = models.BigIntegerField(blank=True, null=True, help_text='专辑ID（来自第三方API）')  # 专辑ID
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
