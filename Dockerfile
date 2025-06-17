@@ -27,13 +27,13 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# 复制项目文件
+# 复制requirements.txt并安装依赖
 COPY requirements.txt .
-COPY . .
-
-# 安装Python依赖
 RUN pip install --no-cache-dir -r requirements.txt \
     && pip install --no-cache-dir selenium webdriver-manager
+
+# 复制项目文件
+COPY . .
 
 # 创建启动脚本
 COPY docker-entrypoint.sh /docker-entrypoint.sh
